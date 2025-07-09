@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>This</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="Version" content="v3.2.1" />
+        <!-- favicon -->
+        <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+        <!-- Bootstrap -->
+        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" />
+        <!-- Slider -->
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/tiny-slider.css') }}" />
+        <!-- Icons -->
+        <link href="{{ url_for('static', filename='css/materialdesignicons.min.css') }}" rel="stylesheet" type="text/css" />
+        <!-- Main Css -->
+        <link href="{{ url_for('static', filename='css/style.min.css') }}" rel="stylesheet" type="text/css" id="theme-opt" />
+        <link href="{{ url_for('static', filename='css/colors/default.css') }}" rel="stylesheet" id="color-opt">
+        
+        {% block style %}{% endblock %}
+
+    </head>
+
+        <!-- Loader -->
+        <!-- <div id="preloader">
+            <div id="status">
+                <div class="spinner">
+                    <div class="double-bounce1"></div>
+                    <div class="double-bounce2"></div>
+                </div>
+            </div>
+        </div> -->
+        <!-- Loader -->
+        <!-- Navbar STart -->
+        <header id="topnav" class="defaultscroll sticky">
+            <div class="container">
+                <!-- Logo container-->
+                <div>
+                    <a class="logo" href="index.html">
+                        <img src="{{ url_for('static', filename='images/logo-dark.png') }}" height="24" alt="">
+                    </a>
+                </div>
+                <ul class="buy-button list-inline mb-0">
+                    {% if session.username %}
+                    <li class="list-inline-item mb-0">
+                        <div class="dropdown dropdown-primary">
+                            <a type="button" href="/profile"
+                                    class="btn btn-primary"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                پروفایل
+                            </a>
+                        </div>
+                    </li>
+                    <li class="list-inline-item mb-0">
+                        <div class="dropdown dropdown-secondary">
+                            <a type="button" href="{{ url_for('view_cart') }}" class="btn btn-secondary">
+                                سبد‌خرید
+                                {% if cart_item_count() > 0 %}
+                                    <span class="badge rounded-pill bg-danger">{{ cart_item_count()|int }}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list-inline-item mb-0">
+                        <div class="dropdown dropdown-primary">
+                            <a type="button" href="/login"
+                                    class="btn btn-primary"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                ورود
+                        </a>
+                        </div>
+                    </li>
+                    <li class="list-inline-item mb-0">
+                        <div class="dropdown dropdown-primary">
+                            <a type="button" href="/register"
+                                    class="btn btn-primary"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                ثبت‌نام
+                            </a>
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+                <!--end login button-->
+                <!-- End Logo container-->
+                <div id="navigation">
+                    <!-- Navigation Menu-->
+                    <ul class="navigation-menu">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">صفحه اصلی</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/about-us">درباره‌ما</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/products">محصولات</a>
+                        </li>
+                    </ul>
+                    <!--end navigation menu-->
+                    <div class="buy-menu-btn d-none">
+                        <a href="https://www.rtl-theme.com/?p=133270"
+                           target="_blank"
+                           class="btn btn-primary">خرید از راست چین</a>
+                    </div>
+                    <!--end login button-->
+                </div>
+                <!--end navigation-->
+            </div>
+            <!--end container-->
+        </header>
+        <!--end header-->
+        <!-- Navbar End -->
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    {% if request.path not in ['/login', '/register'] %}
+<!-- =============================================== -->
+<!-- ======== START SIMPLE CENTERED FOOTER ========= -->
+<!-- =============================================== -->
+<footer class="bg-dark text-center text-white py-4">
+    <div class="container">
+        <!-- Logo -->
+        <a href="#" class="logo-footer mb-4 d-inline-block">
+            <img src="{{ url_for('static', filename='images/logo-dark.png') }}" height="24" alt="Shop Logo">
+        </a>
+        
+        <!-- Brief Text -->
+        <section class="mb-4">
+            <p class="text-white-50">
+                این یک فروشگاه جهت نمایش آسیب پذیری های تحت وب می‌باشد و به هیچ عنوان واقعی نیست.
+            </p>
+        </section>
+
+    </div>
+
+    <!-- Copyright -->
+    <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+        © <script>document.write(new Date().getFullYear())</script> Copyright:
+        <a class="text-white" href="hackmelocal.com">hackmelocal.com</a>
+    </div>
+</footer>
+<!-- =============================================== -->
+<!-- ========= END SIMPLE CENTERED FOOTER ========== -->
+
+    {%endif%}
+    <!--end footer-->
+    <!-- Footer End -->
+    <!-- Product View Start -->
+    <div class="modal fade"
+         id="productview"
+         tabindex="-1"
+         aria-labelledby="productview-title"
+         aria-hidden="true">
+        <div class="modal-dialog  modal-lg modal-dialog-centered">
+            <div class="modal-content rounded shadow border-0">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title" id="productview-title">تی شرت مارک دار</h5>
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="بستن"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="container-fluid px-0">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <div class="tiny-single-item">
+                                    <div class="tiny-slide">
+                                        <img src="{{ url_for('static', filename='images/shop/product/single-2.jpg') }}"
+                                             class="img-fluid rounded"
+                                             alt="">                                    </div>
+                                    <div class="tiny-slide">
+                                        <img src="{{ url_for('static', filename='images/shop/product/single-3.jpg') }}"
+                                             class="img-fluid rounded"
+                                             alt="">                                    </div>
+                                    <div class="tiny-slide">
+                                        <img src="{{ url_for('static', filename='images/shop/product/single-4.jpg') }}"
+                                             class="img-fluid rounded"
+                                             alt="">                                    </div>
+                                    <div class="tiny-slide">
+                                        <img src="{{ url_for('static', filename='images/shop/product/single-5.jpg') }}"
+                                             class="img-fluid rounded"
+                                             alt="">                                    </div>
+                                    <div class="tiny-slide">
+                                        <img src="{{ url_for('static', filename='images/shop/product/single-6.jpg') }}"
+                                             class="img-fluid rounded"
+                                             alt="">                                    </div>
+                                </div>
+                            </div>
+                            <!--end col-->
+                            <div class="col-lg-7 mt-4 mt-lg-0 pt-2 pt-lg-0">
+                                <h4 class="title">تی شرت مارک دار</h4>
+                                <h5 class="text-muted">
+                                    21000 تومان <del class="text-danger ms-2">25000 تومان</del>
+                                </h5>
+                                <ul class="list-unstyled text-warning h5">
+                                    <li class="list-inline-item">
+                                        <i class="mdi mdi-star"></i>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="mdi mdi-star"></i>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="mdi mdi-star"></i>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="mdi mdi-star"></i>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <i class="mdi mdi-star"></i>
+                                    </li>
+                                </ul>
+                                <h5 class="mt-4">بررسی:</h5>
+                                <p class="text-muted">
+                                    لورم ایپسوم متن ساختگی با تولید سادگی نامفهوم از صنعت چاپ و با استفاده از طراحان گرافیک است. چاپگرها و متون بلکه روزنامه و مجله در ستون و سطرآنچنان که لازم است و برای شرایط فعلی تکنولوژی مورد نیاز و کاربردهای متنوع با هدف بهبود ابزارهای کاربردی می باشد. کتابهای زیادی در شصت و سه درصد گذشته، حال و آینده شناخت فراوان جامعه و متخصصان را می طلبد.
+                                </p>
+                                <div class="row mt-4 pt-2">
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-center">
+                                            <h6 class="mb-0">سایز شما:</h6>
+                                            <ul class="list-unstyled mb-0 ms-3">
+                                                <li class="list-inline-item">
+                                                    <a href="javascript:void(0)" class="btn btn-icon btn-soft-primary">S</a>
+                                                </li>
+                                                <li class="list-inline-item ms-1">
+                                                    <a href="javascript:void(0)" class="btn btn-icon btn-soft-primary">M</a>
+                                                </li>
+                                                <li class="list-inline-item ms-1">
+                                                    <a href="javascript:void(0)" class="btn btn-icon btn-soft-primary">L</a>
+                                                </li>
+                                                <li class="list-inline-item ms-1">
+                                                    <a href="javascript:void(0)" class="btn btn-icon btn-soft-primary">XL</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <!--end col-->
+                                    <div class="col-12 mt-4">
+                                        <div class="d-flex shop-list align-items-center">
+                                            <h6 class="mb-0">تعداد:</h6>
+                                            <div class="ms-3">
+                                                <div class="qty-icons">
+                                                    <button onclick="this.parentNode.querySelector('input[type=number]').stepDown()"
+                                                            class="btn btn-icon btn-soft-primary minus">-</button>
+                                                    <input min="0"
+                                                           name="quantity"
+                                                           value="0"
+                                                           type="number"
+                                                           class="btn btn-icon btn-soft-primary qty-btn quantity">
+                                                    <button onclick="this.parentNode.querySelector('input[type=number]').stepUp()"
+                                                            class="btn btn-icon btn-soft-primary plus">+</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end col-->
+                                </div>
+                                <!--end row-->
+                                <div class="mt-4 pt-2">
+                                    <a href="javascript:void(0)" class="btn btn-primary">اکنون بخرید</a>
+                                    <a href="shop-cart.html" class="btn btn-soft-primary ms-2">افزودن به سبد</a>
+                                </div>
+                            </div>
+                            <!--end col-->
+                        </div>
+                        <!--end row-->
+                    </div>
+                    <!--end container-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Product View End -->
+    <!-- Wishlist Popup Start -->
+    <div class="modal fade"
+         id="wishlist"
+         tabindex="-1"
+         role="dialog"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content rounded shadow-lg border-0 overflow-hidden">
+                <div class="modal-body py-5">
+                    <div class="text-center">
+                        <div class="icon d-flex align-items-center justify-content-center bg-soft-danger rounded-circle mx-auto"
+                             style="height: 95px;
+                                    width:95px">
+                            <h1 class="mb-0">
+                                <i class="uil uil-heart-break align-middle"></i>
+                            </h1>
+                        </div>
+                        <div class="mt-4">
+                            <h4>لیست خواسته های شما خالی است.</h4>
+                            <p class="text-muted">اولین درخواست لیست خواسته های خود را ایجاد کنید...</p>
+                            <div class="mt-4">
+                                <a href="javascript:void(0)" class="btn btn-outline-primary">+ لیست خواسته های جدید ایجاد کنید</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Wishlist Popup End -->
+    <!-- Back to top -->
+    <a href="#"
+       onclick="topFunction()"
+       id="back-to-top"
+       class="btn btn-icon btn-primary back-to-top"><i data-feather="arrow-up" class="icons"></i></a>
+</div>
+<!-- End Style switcher -->
+<!-- JavaScript -->
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<!-- Slider -->
+<script src="{{ url_for('static', filename='js/tiny-slider.js') }}"></script>
+<!-- Icons -->
+<script src="{{ url_for('static', filename='js/feather.min.js') }}"></script>
+<!-- Switcher -->
+<script src="{{ url_for('static', filename='js/switcher.js') }}"></script>
+<!-- Main Js -->
+<script src="{{ url_for('static', filename='js/plugins.init.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+{% block script %}{% endblock %}
+
+</body>
+</html>

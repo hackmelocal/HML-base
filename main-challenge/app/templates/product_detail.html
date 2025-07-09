@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}{{product[1]}}{% endblock %}
+
+{% block style %}
+<style>
+    #scors{
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+        <!-- Hero Start -->
+        <section class="bg-half bg-light d-table w-100">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-12 text-center">
+                        <div class="page-next-level">
+                            <h4 class="title"> {{product[1]}} </h4>
+                        </div>
+                    </div><!--end col-->
+                </div><!--end row-->
+            </div> <!--end container-->
+        </section><!--end section-->
+        <div class="position-relative">
+            <div class="shape overflow-hidden text-white">
+                <svg viewBox="0 0 2880 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0 48H1437.5H2880V0H2160C1442.5 52 720 0 720 0H0V48Z" fill="currentColor"></path>
+                </svg>
+            </div>
+        </div>
+        <!-- Hero End -->
+
+        <section class="section pb-0">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-5">
+                        <div class="tiny-single-item">
+                            <div class="tiny-slide"><img src="{{ url_for('static', filename='images/shop/product/s' ~ product[0] ~ '.jpg') }}" class="img-fluid rounded" alt=""></div>
+                            <div class="tiny-slide"><img src="{{ url_for('static', filename='images/shop/product/s-' ~ product[0] ~ '.jpg') }}" class="img-fluid rounded" alt=""></div>
+                        </div>
+                    </div><!--end col-->
+
+                    <div class="col-md-7 mt-4 mt-sm-0 pt-2 pt-sm-0">
+                        <div class="section-title ms-md-4">
+                            <h4 class="title">{{product[1]}}</h4>
+                            <h5 class="text-muted">{{product[3] | int }} تومان</h5>
+                            
+                            <h5 class="mt-4 py-2">بررسی:</h5>
+                            <p class="text-muted">{{product[2]}}</p>
+
+                        <form action="{{ url_for('add_to_cart', product_id=product[0]) }}" method="POST">
+                            <div class="row mt-4 pt-2">
+                                <div class="col-12">
+                                    <div class="d-flex shop-list align-items-center">
+                                        <h6 class="mb-0">تعداد: </h6>
+                                        <div class="qty-icons ms-3">
+                                            <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepDown()" class="btn btn-icon btn-soft-primary minus">-</button>
+                                            <!-- Make sure quantity starts at 1 and min is 1 -->
+                                            <input min="1" name="quantity" value="1" type="number" class="btn btn-icon btn-soft-primary qty-btn quantity">
+                                            <button type="button" onclick="this.parentNode.querySelector('input[type=number]').stepUp()" class="btn btn-icon btn-soft-primary plus">+</button>
+                                        </div>
+                                    </div>
+                                </div><!--end col-->
+                            </div><!--end row-->
+
+                            <div class="mt-4 pt-2">
+                                <button type="submit" class="btn btn-primary">افزودن به سبد خرید</button>
+                            </div>
+                        </form>
+                        </div>
+                    </div><!--end col-->
+                </div><!--end row-->
+            </div><!--end container-->
+
+            <div class="container mt-100 mt-60">
+                <div class="row">
+                    <div class="col-12">
+                        
+                        <div class="tab-content mt-5" id="pills-tabContent">
+
+                            <div class="card border-0 tab-pane fade show active" id="review" role="tabpanel" aria-labelledby="review-comments">
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <ul class="media-list list-unstyled mb-0">
+                                            {% for comment in comments %}
+                                            <li>
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="d-flex align-items-center">
+                                                        <a class="pe-3" href="#">
+                                                            <img src="{{ comment[2] }}" class="img-fluid avatar avatar-md-sm rounded-circle shadow" alt="img">
+                                                        </a>
+                                                        <div class="flex-1 commentor-detail">
+                                                            <h6 class="mb-0"><a href="javascript:void(0)" class="text-dark media-heading">{{ comment[0] }}</a></h6>
+                                                            <small class="text-muted">{{ comment[3] }}</small>
+                                                        </div>
+                                                    </div>
+                                                    <ul class="list-unstyled mb-0">
+                                                        {% for _ in range(comment[4]) %}
+                                                            <li class="list-inline-item"><i class="mdi mdi-star text-warning"></i></li>
+                                                        {% endfor %}
+                                                        {% for _ in range(5 - comment[4]) %}
+                                                            <li class="list-inline-item"><i class="mdi mdi-star text-muted"></i></li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </div>
+                                                <div class="mt-3">
+                                                    <p class="text-muted fst-italic p-3 bg-light rounded">{{ comment[1] | safe }}</p>
+                                                </div>
+                                            </li>
+                                            {% endfor %}                                            
+                                        </ul>
+                                    </div><!--end col-->
+
+                                    <div class="col-lg-6 mt-4 mt-lg-0 pt-2 pt-lg-0">
+                                        <form class="ms-lg-4" method="POST" action="/product/{{ product[0] }}/comment">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <h5>اضافه کردن نظر:</h5>
+                                                </div>
+                                                <div class="col-12 mt-4" id="scors">
+                                                    <h6 class="small fw-bold">امتیاز:</h6>
+                                                    <ul class="list-unstyled mb-0 small">
+                                                        <li class="list-inline-item"><i class="mdi mdi-star text-muted" onclick="setRating(1)"></i></li>
+                                                        <li class="list-inline-item"><i class="mdi mdi-star text-muted" onclick="setRating(2)"></i></li>
+                                                        <li class="list-inline-item"><i class="mdi mdi-star text-muted" onclick="setRating(3)"></i></li>
+                                                        <li class="list-inline-item"><i class="mdi mdi-star text-muted" onclick="setRating(4)"></i></li>
+                                                        <li class="list-inline-item"><i class="mdi mdi-star text-muted" onclick="setRating(5)"></i></li>
+                                                    </ul>
+                                                    <input type="hidden" value="0" id="star-hidden" name="star"/>
+                                                </div>
+                                                <div class="col-md-12 mt-3">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">نظر شما:</label>
+                                                        <div class="form-icon position-relative">
+                                                            <i data-feather="message-circle" class="fea icon-sm icons"></i>
+                                                            <textarea id="message" placeholder="کامنت شما" rows="5" name="message" class="form-control ps-5" required></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <div class="send d-grid">
+                                                        <button type="submit" class="btn btn-primary">ارسال </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div><!--end col-->
+                                </div><!--end row-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!--end container-->
+
+            <div class="container mt-100 mt-60">
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="mb-0">محصولات اخیر</h5>
+                    </div><!--end col-->
+
+                    <div class="col-12 mt-4">
+                        <div class="tiny-four-item">
+                            {% for p in other_products %}
+                                <div class="tiny-slide">
+                                    <div class="card shop-list border-0 position-relative m-2">
+                                        <ul class="label list-unstyled mb-0">
+                                            <li><a href="javascript:void(0)" class="badge badge-link rounded-pill bg-warning">ویژه </a></li>
+                                        </ul>
+                                        <div class="shop-image position-relative overflow-hidden rounded shadow">
+                                            <a href="/product/{{ p[0] }}"><img src="{{ url_for('static', filename='images/shop/product/s' ~ p[0] ~ '.jpg') }}" class="img-fluid" alt=""></a>
+                                            <a href="/product/{{ p[0] }}" class="overlay-work">
+                                                <img src="{{ p[4] }}" class="img-fluid" alt="">
+                                            </a>
+                                            <ul class="list-unstyled shop-icons">
+                                                <li><a href="javascript:void(0)" class="btn btn-icon btn-pills btn-soft-danger"><i data-feather="heart" class="icons"></i></a></li>
+                                                <li class="mt-2"><a href="/product/{{ p[0] }}" class="btn btn-icon btn-pills btn-soft-primary"><i data-feather="eye" class="icons"></i></a></li>
+                                                <li class="mt-2"><a href="shop-cart.html" class="btn btn-icon btn-pills btn-soft-warning"><i data-feather="shopping-cart" class="icons"></i></a></li>
+                                            </ul>
+                                        </div>
+                                        <div class="card-body content pt-4 p-2">
+                                            <a href="/product/{{ p[0] }}" class="text-dark product-name h6 text-center">{{ p[1] }}</a>
+                                            <div class="d-flex justify-content-between mt-1">
+                                                <h6 class="text-muted small fst-italic mb-0 mt-1">{{ p[3] }} تومان</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                        </div>
+                    </div><!--end col-->
+                </div><!--end row-->
+            </div><!--end container-->
+
+            <div class="container-fluid mt-100 mt-60 px-0">
+                <div class="py-5 bg-light">
+                    <div class="container">
+                        <div class="row align-items-center">
+                            <div class="col-12">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <a href="shop-product-detail.html" class="text-dark align-items-center">
+                                        <span class="pro-icons"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left fea icon-sm"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></span>
+                                        <span class="text-muted d-none d-md-inline-block">توسعه وب </span>
+                                        <img src="images/work/6.jpg" class="avatar avatar-small rounded shadow ms-2" style="height:auto;" alt="">
+                                    </a>
+
+                                    <a href="index.html" class="btn btn-lg btn-pills btn-icon btn-soft-primary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home icons"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></a>
+                                    
+                                    <a href="shop-product-detail.html" class="text-dark align-items-center">
+                                        <img src="images/work/7.jpg" class="avatar avatar-small rounded shadow me-2" style="height:auto;" alt="">
+                                        <span class="text-muted d-none d-md-inline-block">طراحی وب</span>
+                                        <span class="pro-icons"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right fea icon-sm"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span>
+                                    </a>
+                                </div>
+                            </div><!--end col-->
+                        </div><!--end row-->
+                    </div><!--end container-->
+                </div><!--end div-->
+            </div>
+        </section><!--end section-->
+{% endblock %}
+
+{% block script %}
+<script>
+    const stars = document.querySelectorAll("#scors .list-inline-item i");
+        let selectedRating = 0;
+
+        function updateStars(rating) {
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove("text-muted");
+                    star.classList.add("text-warning");
+                } else {
+                    star.classList.remove("text-warning");
+                    star.classList.add("text-muted");
+                }
+            });
+        }
+
+        stars.forEach((star, index) => {
+            star.addEventListener("mouseover", function () {
+                updateStars(index + 1);
+            });
+
+            star.addEventListener("click", function () {
+                selectedRating = index + 1;
+                document.getElementsByName("star")[0].value = selectedRating
+                updateStars(selectedRating);
+            });
+
+            star.addEventListener("mouseleave", function () {
+                updateStars(selectedRating);
+            });
+        });
+</script>
+{% endblock %}

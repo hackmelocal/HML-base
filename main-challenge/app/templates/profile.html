@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}پروفایل{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/materialdesignicons.css') }}">
+
+        <!-- Hero Start -->
+        <section class="bg-profile d-table w-100 bg-primary" style="background: url('{{ url_for('static', filename='images/account/bg.png') }}') center center;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card public-profile border-0 rounded shadow" style="z-index: 1;">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-lg-2 col-md-3 text-md-start text-center">
+                                        <img src="{{ url_for('static', filename='images/user/default.png') }}" class="avatar avatar-large rounded-circle shadow d-block mx-auto" alt="">
+                                    </div><!--end col-->
+    
+                                    <div class="col-lg-10 col-md-9">
+                                        <div class="row align-items-end">
+                                            <div class="col-md-7 text-md-start text-center mt-4 mt-sm-0">
+                                                <h3 class="title mb-0">{{user['username']}}</h3>
+                                                {% if user['access'] == 'user' %}
+                                                    <small class="text-muted h6 me-2">کاربر</small>
+                                                {% else %}
+                                                    <small class="text-muted h6 me-2">ادمین</small>
+                                                {% endif %}
+                                                
+                                            </div><!--end col-->
+                                        </div><!--end row-->
+                                    </div><!--end col-->
+                                </div><!--end row-->
+                            </div>
+                        </div>
+                    </div><!--end col-->
+                </div><!--end row-->
+            </div><!--ed container-->
+        </section><!--end section-->
+        <!-- Hero End -->
+
+        <!-- Profile Start -->
+        <section class="section mt-60">
+            <div class="container mt-lg-3">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 col-12 d-lg-block d-none">
+                        <div class="sidebar sticky-bar p-4 rounded shadow">
+                            
+                            <div class="widget">
+                                <ul class="list-unstyled sidebar-nav mb-0" id="navmenu-nav">
+                                    
+                                    <!-- FIXED LINK: points to the #orders anchor below -->
+                                    <li class="navbar-item account-menu px-0 mt-2">
+                                        <a href="#orders" class="navbar-link d-flex rounded shadow align-items-center py-2 px-4 bg-primary">
+                                            <span class="h4 mb-0"><i class="mdi mdi-basket-outline text-white"></i></span>
+                                            <h6 class="mb-0 ms-2 text-white">سفارشات من</h6>
+                                        </a>
+                                    </li>
+
+                                    <li class="navbar-item account-menu px-0 mt-2">
+                                        <a href="/logout" class="navbar-link d-flex rounded shadow align-items-center py-2 px-4 bg-primary">
+                                            <span class="h4 mb-0"><i class="mdi mdi-logout text-white"></i></span>
+                                            <h6 class="mb-0 ms-2 text-white">خروج</h6>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div><!--end col-->
+
+                    <div class="col-lg-8 col-12">
+                        <!-- NEW: Display Order History -->
+                        <div class="border-bottom pb-4">
+                            <h5 id="orders">تاریخچه سفارشات</h5>
+                            
+                            {% if orders %}
+                                {% for order in orders %}
+                                    <div class="shadow rounded p-4 mt-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="mb-0">سفارش شماره #{{ order.id }}</h6>
+                                            <span class="text-muted">تاریخ: {{ order.created_at }}</span>
+                                        </div>
+                                        <div class="table-responsive">
+                                            <table class="table table-center">
+                                                <thead>
+                                                    <tr>
+                                                        <th>محصول</th>
+                                                        <th>قیمت واحد</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for item in order.products %} <!-- FIX: Changed order.items to order.products -->
+                                                    <tr>
+                                                        <td>{{ item.product_name }}</td>
+                                                        <td>{{ "%.0f"|format(item.price_at_purchase) }} تومان</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="text-end border-top pt-3">
+                                            <strong>جمع کل: {{ "%.0f"|format(order.total_amount) }} تومان</strong>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted mb-0 mt-3">شما تاکنون هیچ سفارشی ثبت نکرده‌اید.</p>
+                            {% endif %}
+                        </div>
+                        <!-- END: Display Order History -->
+                    </div><!--end col-->
+                </div><!--end row-->
+            </div><!--end container-->
+        </section><!--end section-->
+        <!-- Profile End -->
+{% endblock %}

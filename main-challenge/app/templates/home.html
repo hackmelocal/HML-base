@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}صفحه اصلی{% endblock %}
+{% block content %}
+    <body>
+
+        <!-- Hero Start -->
+        <section class="home-slider position-relative">
+            <div id="carouselExampleInterval"
+                 class="carousel slide carousel-fade"
+                 data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div class="carousel-item active" data-bs-interval="3000">
+                        <div class="bg-home slider-rtl-2 d-flex align-items-center" style="background:url({{ url_for('static', filename='images/shop/bg1.jpg') }}) center center">
+                            <div class="container">
+                                <div class="row align-items-center mt-5">
+                                    <div class="col-lg-7 col-md-7">
+                                        <div class="title-heading mt-4">
+                                            <h1 class="display-4 title-white fw-bold mb-3">
+                                                لوازم جانبی جدید
+                                                <br>
+                                                با مجموعه جدید ما
+                                            </h1>
+                                            <p class="para-desc text-muted para-dark">
+                                                کمپین خود را راه اندازی کنید و از تخصص ما در زمینه طراحی و مدیریت صفحه بوت استرپ v5 html تبدیل محور بهره مند شوید.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <!--end col-->
+                                </div>
+                                <!--end row-->
+                            </div>
+                            <!--end container-->
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="3000">
+                        <div class="bg-home slider-rtl-1 d-flex align-items-center"
+                             style="background:url({{ url_for('static', filename='images/shop/bg1.jpg') }}) center center">
+                            <div class="container">
+                                <div class="row align-items-center mt-5">
+                                    <div class="col-lg-7 col-md-7">
+                                        <div class="title-heading mt-4">
+                                            <h1 class="display-4 title-white fw-bold mb-3">
+                                                هدفون
+                                                <br>
+                                                شیائومی
+                                            </h1>
+                                            <p class="para-desc text-muted para-dark">
+                                                کمپین خود را راه اندازی کنید و از تخصص ما در زمینه طراحی و مدیریت صفحه بوت استرپ v5 html تبدیل محور بهره مند شوید.
+                                            </p>
+                                            <div class="mt-4">
+                                                <a href="javascript:void(0)" class="btn btn-soft-primary">اکنون بخرید</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end col-->
+                                </div>
+                                <!--end row-->
+                            </div>
+                            <!--end container-->
+                        </div>
+                    </div>
+                    <div class="carousel-item" data-bs-interval="3000">
+                        <div class="bg-home slider-rtl-3 d-flex align-items-center"
+                             style="background:url({{ url_for('static', filename='images/shop/bg1.jpg') }}) center center">
+                            <div class="container">
+                                <div class="row align-items-center mt-5">
+                                    <div class="col-lg-7 col-md-7">
+                                        <div class="title-heading mt-4">
+                                            <h1 class="display-4 title-white fw-bold mb-3">
+                                                مبلمان مدرن،
+                                                <br>
+                                                و جدید
+                                            </h1>
+                                            <p class="para-desc text-muted para-dark">
+                                                کمپین خود را راه اندازی کنید و از تخصص ما در زمینه طراحی و مدیریت صفحه بوت استرپ v5 html تبدیل محور بهره مند شوید.
+                                            </p>
+                                            <div class="mt-4">
+                                                <a href="javascript:void(0)" class="btn btn-soft-primary">اکنون بخرید</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!--end col-->
+                                </div>
+                                <!--end row-->
+                            </div>
+                            <!--end container-->
+                        </div>
+                    </div>
+                </div>
+                <a class="carousel-control-prev"
+                   href="#carouselExampleInterval"
+                   role="button"
+                   data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">قبلی</span>
+                </a>
+                <a class="carousel-control-next"
+                   href="#carouselExampleInterval"
+                   role="button"
+                   data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">بعدی</span>
+                </a>
+            </div>
+        </section>
+        <!--end section-->
+        <!-- Hero End -->
+        <!-- Start -->
+
+        <section class="section">
+            <!-- Start پربازدیدترین محصولات -->
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="mb-0">پربازدیدترین محصولات</h5>
+                    </div>
+                    <!--end col-->
+                </div>
+                <!--end row-->
+                <div class="row">
+                    {% for product in products %}
+                    <div class="col-lg-3 col-md-6 col-12 mt-4 pt-2">
+                        <div class="card shop-list border-0 position-relative">
+                            <div class="shop-image position-relative overflow-hidden rounded shadow">
+                                <a href="/product/{{product[0]}}">
+                                    <img src="{{ url_for('static', filename='images/shop/product/s' ~ product[0] ~ '.jpg') }}" class="img-fluid" alt=""></a>
+                                <a href="/product/{{product[0]}}" class="overlay-work">
+                                    <img src="{{ url_for('static', filename='images/shop/product/s-' ~ product[0] ~ '.jpg') }}" class="img-fluid" alt=""></a>
+                            </div>
+                            <div class="card-body content pt-4 p-2">
+                                <a href="/product/{{product[0]}}" class="text-dark product-name h6">{{ product[1] }}</a>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <h6 class="text-muted small fst-italic mb-0 mt-1">
+                                        {{product[3] | int}} تومان
+                                    </h6>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <!--end col-->
+                </div>
+                <!--end row-->
+            </div>
+            <!--end container-->
+            <!-- End Most Viewed Product -->
+        </section>
+        <!--end section-->
+        <!-- End -->
+
+</body>
+</html>
+{% endblock %}
