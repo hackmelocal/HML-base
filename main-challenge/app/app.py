@@ -607,4 +607,4 @@ def payment_verify():
 
 if __name__ == '__main__':
     init_db()  # Initialize database
-    app.run(host='0.0.0.0', port=8080, debug=True)
+    app.run(host='0.0.0.0', port=443, debug=True)
