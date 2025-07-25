@@ -7,15 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: webserver
     ports:
-      - "8080:8080"
+      - "8000:8000"
     networks:
       - app-network
     volumes:
       - "./main-challenge/app:/app"
     environment:
-      - PAYMENT_SERVICE_HOST=payment-app
-      
-      # Pass only the minimum required variables for the fallback method
+      - PAYMENT_SERVICE_HOST=payment-app      
       - CODESPACE_NAME=${CODESPACE_NAME}
       - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
 
@@ -25,13 +23,12 @@ services:
       dockerfile: Dockerfile
     container_name: paymentserver
     ports:
-      - "8001:8001"
+      - "8080:8080"
     networks:
       - app-network
     volumes:
       - "./payment/:/app"
     environment:
-      # Pass the minimum required variables here as well
       - CODESPACE_NAME=${CODESPACE_NAME}
       - GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN=${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}
 

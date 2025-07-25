@@ -4,22 +4,10 @@ import datetime
 from flask import abort
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-import requests ### NEW ###
-import uuid ### NEW ###
-import json ### NEW ###
+import requests
+import uuid
+import json
 import os
-
-app = Flask(__name__)
-app.secret_key = 'supersecretkey'
-
-# ✅ Setup limiter (limit based on IP address)
-limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
-
-### NEW ### - Payment Gateway Configuration
-PAYMENT_GATEWAY_TOKEN = "S41ZLPLR6nS2kg" # As specified in your curl command
-
-PAYMENT_SERVICE_HOSTNAME = os.environ.get('PAYMENT_SERVICE_HOST', '127.0.0.1')
-PAYMENT_GATEWAY_URL = f"http://{PAYMENT_SERVICE_HOSTNAME}:8001/api/create-payment"
 
 def get_public_url(port):
     """
@@ -27,16 +15,26 @@ def get_public_url(port):
     Detects if running in a GitHub Codespace and builds the URL accordingly.
     Falls back to localhost for local development.
     """
-    # Check for Codespace-specific environment variables
-    if 'CODESPACE_NAME' in os.environ and 'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN' in os.environ:
+    if 'CODESPACE_NAME' in os.environ and 'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN' in os.environ and os.environ['CODESPACE_NAME'] != "":
         codespace_name = os.environ['CODESPACE_NAME']
         domain = os.environ['GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN']
         return f"https://{codespace_name}-{port}.{domain}"
     else:
-        # Fallback for local development
-        print("ITS LOCAL")
         return f"http://localhost:{port}"
 
+app = Flask(__name__)
+app.secret_key = 'supersecretkey'
+
+limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "50 per hour"])
+
+PAYMENT_GATEWAY_TOKEN = "S41ZLPLR6nS2kg"
+
+if 'CODESPACE_NAME' in os.environ and 'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN' in os.environ and os.environ['CODESPACE_NAME'] != "":
+    PAYMENT_GATEWAY_URL = f"http://127.0.0.1:8080/api/create-payment"
+else:
+    PAYMENT_SERVICE_HOSTNAME = os.environ.get('PAYMENT_SERVICE_HOST', '127.0.0.1')
+    PAYMENT_GATEWAY_URL = f"http://{PAYMENT_SERVICE_HOSTNAME}:8080/api/create-payment"
+    
 
 # Database setup
 def init_db():
@@ -136,7 +134,7 @@ def init_db():
             conn.commit()
 
 
-### NEW ### - Context Processor to make cart count available to all templates
+# Context Processor to make cart count available to all templates
 @app.context_processor
 def utility_processor():
     def cart_item_count():
@@ -160,7 +158,7 @@ def product_list():
     return render_template('product_list.html', products=products)
 
 
-@app.route('/product/<int:product_id>')  # Flask will now enforce integer-only IDs
+@app.route('/product/<int:product_id>')
 def product_detail(product_id):
     with sqlite3.connect("app.db") as conn:
         cursor = conn.cursor()
@@ -200,8 +198,8 @@ def product_detail(product_id):
 def submit_comment(product_id):
     name = session.get('username', 'Anonymous')
     content = request.form.get('message')
-    score = request.form.get('star', 0)  # Default to 0 if not provided
-    profile_pic = "/static/images/user/default.png"  # You can replace this with an actual profile image path
+    score = request.form.get('star', 0)
+    profile_pic = "/static/images/user/default.png"
     date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     with sqlite3.connect("app.db") as conn:
@@ -225,8 +223,8 @@ def login():
             cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
             user = cursor.fetchone()
             if user:
-                session['username'] = user[1]  # Assuming the second column is the username
-                session['cart'] = {} # ### NEW ### Initialize empty cart on login
+                session['username'] = user[1] 
+                session['cart'] = {}
                 flash('Login successful!', 'success')
                 return redirect(url_for('profile'))
             else:
@@ -234,7 +232,7 @@ def login():
     return render_template('login.html', login_failed=login_failed)
 
 @app.route('/register', methods=['GET', 'POST'])
-@limiter.limit("تعداد درخواست بیش از حد")  # ✅ Apply rate limit
+@limiter.limit("تعداد درخواست بیش از حد")
 def register():
     user_exists = False
     registration_successful = False
@@ -249,10 +247,8 @@ def register():
                 conn.commit()
                 registration_successful = True
             except sqlite3.IntegrityError:
-                # Username exists, but we won't explicitly tell the user
-                user_exists = True  # We won't show this to prevent enumeration
+                user_exists = True
 
-        # ✅ Show generic message
         if registration_successful:
             flash('Registration completed.', 'success')
             return redirect(url_for('login'))
@@ -269,10 +265,10 @@ def profile():
     
     username = session['username']
     user_data = None
-    orders = {} # Use a dictionary to group items by order
+    orders = {}
 
     with sqlite3.connect("app.db") as conn:
-        conn.row_factory = sqlite3.Row # Allows accessing columns by name
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
         
         # Get user info
@@ -281,8 +277,6 @@ def profile():
         
         if user:
             user_data = dict(user)
-            
-            # Fetch all order items for this user, joining all necessary tables
             query = """
                 SELECT 
                     o.id as order_id,
@@ -333,7 +327,6 @@ def logout():
     # Redirect to the home page
     return redirect('/')
 
-### NEW ### - Shopping Cart Routes
 
 @app.route('/add_to_cart/<int:product_id>', methods=['POST'])
 def add_to_cart(product_id):
@@ -341,14 +334,14 @@ def add_to_cart(product_id):
         flash('لطفا برای اضافه کردن محصول به سبد خرید، ابتدا وارد شوید.', 'warning')
         return redirect(url_for('login'))
 
-    # VULNERABILITY: Switched from int() to float() and removed validation.
-    # The application now accepts fractional quantities like 0.1, -5, etc.
-    # A robust application should check if the quantity is a positive integer.
     try:
-        quantity = float(request.form.get('quantity', 1.0))
+        quantity = int(request.form.get('quantity'))
     except (ValueError, TypeError):
         # If the input isn't a number at all, just default to 1.
-        quantity = 1.0
+        quantity = 1
+
+    if quantity < 1:
+        quantity = 1
 
     # Ensure cart exists in session
     if 'cart' not in session:
@@ -358,7 +351,6 @@ def add_to_cart(product_id):
     # Use string for product_id as JSON keys are strings
     str_product_id = str(product_id)
 
-    # Add item to cart
     # The cart will now store quantities like 0.1, 1.5, etc.
     cart[str_product_id] = cart.get(str_product_id, 0.0) + quantity
     session['cart'] = cart  # Save cart back to session
@@ -499,8 +491,8 @@ def checkout():
         response_data = response.json()
         
         if 'url' in response_data:
-            # 2. Construct the full, public redirect URL for the PAYMENT service (on port 8001)
-            public_payment_url = get_public_url(8001)
+            # 2. Construct the full, public redirect URL for the PAYMENT service (on port 8080)
+            public_payment_url = get_public_url(8080)
             payment_redirect_url = f"{public_payment_url}{response_data['url']}"
             
             return redirect(payment_redirect_url)
@@ -524,7 +516,7 @@ def payment_verify():
 
     # Step 1: Verify payment with validator server
     try:
-        public_self_url = get_public_url(8001)  # dynamic base URL
+        public_self_url = get_public_url(8080)  # dynamic base URL
         verify_url = f"{public_self_url}/api/verify-payment"
 
         response = requests.post(
@@ -607,4 +599,4 @@ def payment_verify():
 
 if __name__ == '__main__':
     init_db()  # Initialize database
-    app.run(host='0.0.0.0', port=443, debug=True)
+    app.run(host='0.0.0.0', port=8000, debug=True)

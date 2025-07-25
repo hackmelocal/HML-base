@@ -10,7 +10,8 @@ WORKDIR /app
 # Install dependencies
 RUN pip install --no-cache-dir flask Flask-Limiter requests
 
-# Expose port 8081
+# Expose ports
+EXPOSE 8000
 EXPOSE 8080
 
 # Command to run the application
