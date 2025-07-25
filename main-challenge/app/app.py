@@ -9,13 +9,17 @@ import uuid
 import json
 import os
 
+IS_IN_CODESPACE = bool(os.environ.get('CODESPACE_NAME'))
+IS_IN_DOCKER = os.path.exists('/.dockerenv')
+
 def get_public_url(port):
     """
     Dynamically constructs the public URL for a given port.
-    Detects if running in a GitHub Codespace and builds the URL accordingly.
+    Detects if the host is a GitHub Codespace and builds the URL accordingly.
     Falls back to localhost for local development.
     """
-    if 'CODESPACE_NAME' in os.environ and 'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN' in os.environ and os.environ['CODESPACE_NAME'] != "":
+    # This logic is correct. It depends on the HOST environment, not the container.
+    if IS_IN_CODESPACE:
         codespace_name = os.environ['CODESPACE_NAME']
         domain = os.environ['GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN']
         return f"https://{codespace_name}-{port}.{domain}"
@@ -29,12 +33,20 @@ limiter = Limiter(get_remote_address, app=app, default_limits=["200 per day", "5
 
 PAYMENT_GATEWAY_TOKEN = "S41ZLPLR6nS2kg"
 
-if 'CODESPACE_NAME' in os.environ and 'GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN' in os.environ and os.environ['CODESPACE_NAME'] != "":
-    PAYMENT_GATEWAY_URL = f"http://127.0.0.1:8080/api/create-payment"
-else:
-    PAYMENT_SERVICE_HOSTNAME = os.environ.get('PAYMENT_SERVICE_HOST', '127.0.0.1')
+# --- Corrected Logic for Service Communication ---
+
+PAYMENT_GATEWAY_URL = ""
+
+# The primary check should be for Docker, as it dictates networking.
+if IS_IN_DOCKER:
+    # We are in a Docker container. Use the service name provided by the env var.
+    # Your docker-compose correctly sets PAYMENT_SERVICE_HOST=payment-app
+    PAYMENT_SERVICE_HOSTNAME = os.environ.get('PAYMENT_SERVICE_HOST', 'payment-app')
     PAYMENT_GATEWAY_URL = f"http://{PAYMENT_SERVICE_HOSTNAME}:8080/api/create-payment"
-    
+else:
+    # We are NOT in Docker (running directly on local machine or in Codespace).
+    # In this case, the other service is accessible via localhost.
+    PAYMENT_GATEWAY_URL = "http://127.0.0.1:8080/api/create-payment"
 
 # Database setup
 def init_db():
@@ -471,9 +483,8 @@ def checkout():
 
     # --- DYNAMIC URL LOGIC ---
     # 1. Construct the full, public callback URL for THIS application (on port 8080)
-    public_self_url = get_public_url(8080)
+    public_self_url = get_public_url(8000)
     full_callback_url = f"{public_self_url}{url_for('payment_verify')}"
-
 
     # Prepare data for the payment gateway API
     payload = {
@@ -511,43 +522,64 @@ def payment_verify():
     hash_value = request.args.get('hash')
 
     if not payment_id or not hash_value:
-        flash('اطلاعات پرداخت ناقص است.', 'danger')
+        flash('Payment information is incomplete.', 'danger')
         return redirect(url_for('view_cart'))
 
-    # Step 1: Verify payment with validator server
+    # --- SOLUTION: Dynamically set the correct URL for the payment service ---
+    # Step 1: Verify payment with the payment service
     try:
-        public_self_url = get_public_url(8080)  # dynamic base URL
-        verify_url = f"{public_self_url}/api/verify-payment"
+        # Determine the correct hostname based on the environment
+        if IS_IN_DOCKER:
+            # We are in Docker, so use the service name from the environment variable.
+            # Your docker-compose.yml correctly sets PAYMENT_SERVICE_HOST=payment-app
+            payment_hostname = os.environ.get('PAYMENT_SERVICE_HOST', 'payment-app')
+        else:
+            # We are not in Docker (running locally), so use localhost.
+            payment_hostname = '127.0.0.1'
+        
+        # Construct the full, correct URL
+        verify_url = f"http://{payment_hostname}:8080/api/verify-payment"
+        
+        print(f"DEBUG: Verifying payment against URL: {verify_url}") # Helpful for debugging
 
         response = requests.post(
             verify_url,
             data={'id': payment_id, 'hash': hash_value},
             timeout=5
         )
+        # Raise an exception for bad status codes (like 404, 500)
+        response.raise_for_status() 
+        
         result = response.json()
-        if response.status_code != 200 or result.get('status') != '1':
-            flash('پرداخت تأیید نشد. لطفا دوباره تلاش کنید.', 'danger')
+        
+        # IMPORTANT CORRECTION: Your payment API returns "accepted", not "1".
+        # This check is now consistent with the payment service's actual response.
+        if result.get('status') != 'accepted':
+            flash(f"پرداخت تایید نشد: {result.get('status')}", 'danger')
             return redirect(url_for('view_cart'))
+
     except requests.RequestException as e:
         print(f"Error verifying payment: {e}")
-        flash('مشکلی در ارتباط با سرور پرداخت رخ داد.', 'danger')
+        flash('A problem occurred while communicating with the payment service.', 'danger')
         return redirect(url_for('view_cart'))
+    # --- END OF SOLUTION BLOCK ---
 
-    # Step 2: Continue if verified
+    # Step 2: Continue to process the order if verified
     try:
         with sqlite3.connect("app.db") as conn:
+            # ... (The rest of your code for saving the order is correct and needs no changes)
             cursor = conn.cursor()
             
             cursor.execute("SELECT id FROM users WHERE username = ?", (session['username'],))
             user_row = cursor.fetchone()
             if not user_row:
-                flash('کاربر یافت نشد.', 'danger')
+                flash('User not found.', 'danger')
                 return redirect(url_for('view_cart'))
             user_id = user_row[0]
 
             cart = session.get('cart', {})
             if not cart:
-                flash('سبد خرید شما خالی است.', 'warning')
+                flash('Your cart is empty.', 'warning')
                 return redirect(url_for('home'))
 
             total_price = 0
@@ -586,16 +618,15 @@ def payment_verify():
 
     except sqlite3.Error as e:
         print(f"Database error while saving order: {e}")
-        flash('خطایی در ثبت سفارش شما رخ داد. لطفا با پشتیبانی تماس بگیرید.', 'danger')
+        flash('An error occurred while saving your order. Please contact support.', 'danger')
         return redirect(url_for('view_cart'))
 
     # Step 3: Clear cart and show success
     session.pop('cart', None)
     session.pop('transaction_code', None)
     session.modified = True
-    flash('پرداخت شما با موفقیت انجام شد. سفارش شما ثبت گردید.', 'success')
+    flash('Your payment was successful and your order has been placed!', 'success')
     return redirect(url_for('profile'))
-
 
 if __name__ == '__main__':
     init_db()  # Initialize database
